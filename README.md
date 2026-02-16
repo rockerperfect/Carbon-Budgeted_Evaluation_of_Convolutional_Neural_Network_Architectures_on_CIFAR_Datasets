@@ -5,6 +5,7 @@ Rethinking CNN evaluation under environmental constraints.
 This repository accompanies the research paper:
 
 "Carbon-Budgeted Evaluation of Convolutional Neural Network Architectures on CIFAR Datasets"
+
 Dr. Ankur Pandey, Divye Bisaria*, Ishan Gautam
 Manipal University Jaipur, India
 
