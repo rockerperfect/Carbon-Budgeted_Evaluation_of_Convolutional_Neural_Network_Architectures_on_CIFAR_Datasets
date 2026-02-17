@@ -19,7 +19,5 @@ def build_model(model_name, num_classes):
         return build_mobilenetv2(num_classes)
     elif model_name == "efficientnetb0":
         return build_efficientnetb0(num_classes)
-    elif model_name == "convnext_tiny":
-        return build_convnext_tiny(num_classes)
     else:
         raise ValueError(f"Unknown model: {model_name}")
