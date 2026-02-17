@@ -12,7 +12,7 @@ def train_until_convergence(
     patience=10
 ):
     # ---- NEW: learning-rate schedule (cosine decay) ----
-    steps_per_epoch = len(x_train) // batch_size
+    steps_per_epoch = len(x_train) 
     total_steps = max_epochs * steps_per_epoch
 
     lr_schedule = tf.keras.optimizers.schedules.CosineDecay(
