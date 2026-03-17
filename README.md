@@ -1,259 +1,268 @@
-🌱 Carbon-Budgeted Evaluation of CNN Architectures on CIFAR
+# Carbon-Budgeted Evaluation of Convolutional Neural Network Architectures on CIFAR Datasets
 
-Rethinking CNN evaluation under environmental constraints.
+> A framework for evaluating deep learning models under fixed CO₂ emission constraints, revisiting conventional accuracy-centric benchmarking through the lens of computational sustainability.
 
-This repository accompanies the research paper:
+---
 
-"Carbon-Budgeted Evaluation of Convolutional Neural Network Architectures on CIFAR Datasets"
+## Overview
 
-Dr. Ankur Pandey, Divye Bisaria*, Ishan Gautam
-Manipal University Jaipur, India
+This repository accompanies the paper:
 
-📌 Corresponding Author: divyebisaria4106@gmail.com
+**"Carbon-Budgeted Evaluation of Convolutional Neural Network Architectures on CIFAR Datasets"**
 
-📖 Overview
+Full paper available at: [[link]](#)
 
-Deep learning models are traditionally evaluated using final accuracy after fixed epochs or convergence. However, this ignores carbon emissions and environmental cost during training.
+Standard CNN benchmarking measures final accuracy after full training, which obscures a model's efficiency under real-world resource constraints. This work proposes a **carbon-budgeted evaluation paradigm**: given a predefined CO₂ emission budget (in grams), what is the maximum accuracy a model can achieve before that budget is exhausted?
 
-This project introduces a Carbon-Budgeted Evaluation Framework that:
+The framework operates entirely via **post-hoc analysis of training logs** — no modifications to training procedures are required. Models are compared across three evaluation protocols: fixed-epoch training, convergence-based training, and carbon-budgeted evaluation.
 
-Treats carbon emissions as a primary constraint
+---
 
-Analyzes training trajectories post-hoc
+## Key Contributions
 
-Determines maximum achievable accuracy within a fixed CO₂ budget
+- A carbon-constrained evaluation framework applicable to any CNN trained with per-epoch emission tracking.
+- Systematic comparison of six architectures across three evaluation protocols on CIFAR-10 and CIFAR-100.
+- Empirical demonstration that final-accuracy rankings are not preserved under carbon constraints.
+- Identification of **early-learning efficiency** as a distinct and practically relevant performance metric.
 
-Enables fair architectural comparison under sustainability constraints
+---
 
-Instead of asking:
+## Models Evaluated
 
-"Which model achieves the highest accuracy?"
+| Model           | Characteristics                                    |
+|-----------------|----------------------------------------------------|
+| LeNet-5         | Shallow baseline; minimal parameter count          |
+| VGG-16          | Deep, wide architecture; high emission profile     |
+| ResNet-18       | Residual connections; strong early-epoch learning  |
+| ResNet-50       | Deeper residual variant; increased computational cost |
+| MobileNetV2     | Depthwise separable convolutions; efficiency-oriented |
+| EfficientNet-B0 | Compound-scaled; high accuracy but slower to ramp  |
 
-We ask:
+---
 
-"Which model achieves the best accuracy within a given carbon budget?"
+## Datasets
 
-🧠 Architectures Evaluated
+| Dataset   | Classes | Image Size | Split            |
+|-----------|---------|------------|------------------|
+| CIFAR-10  | 10      | 32 × 32    | 50k train / 10k test |
+| CIFAR-100 | 100     | 32 × 32    | 50k train / 10k test |
 
-The study covers CNN models across different design generations:
+Both datasets are used as-is without resizing, providing a controlled benchmarking environment that highlights architectural differences rather than data preprocessing effects.
 
-🔹 LeNet-5
-4
+---
 
-Early CNN architecture
+## Methodology
 
-Simple convolution + pooling design
+### Carbon Tracking
 
-Baseline carbon-efficient model
+Emissions are tracked using [CodeCarbon](https://github.com/mlco2/codecarbon), which estimates CO₂ equivalent (in grams) based on hardware power draw, runtime, and regional electricity carbon intensity:
 
-🔹 VGG-16
-4
-
-Deep sequential architecture
-
-High accuracy
-
-Carbon-inefficient under constrained budgets
-
-🔹 ResNet-18 / ResNet-50
-4
-
-Introduced residual (skip) connections
-
-Strong early learning efficiency
-
-Dominates under strict carbon budgets
-
-🔹 MobileNetV2
-4
-
-Lightweight architecture
-
-Designed for mobile efficiency
-
-Competitive under moderate budgets
-
-🔹 EfficientNet-B0
-4
-
-Compound scaling (depth, width, resolution)
-
-Extremely low emissions in some settings
-
-Delayed early learning behavior
-
-📊 Datasets
-
-CIFAR-10 (10 classes)
-
-CIFAR-100 (100 classes)
-
-32×32 RGB images
-
-No data augmentation (to isolate architectural effects)
-
-⚙️ Experimental Setup
-Component	Configuration
-Optimizer	Adam
-Loss	Categorical Cross-Entropy
-LR Schedule	Cosine Decay
-Batch Size	64
-Fixed Epochs	50
-Max Epochs	100
-Early Stopping	Patience = 10
-Runs per Model	3
-Hardware	NVIDIA T4 GPU (Google Colab)
-Carbon Tracking	CodeCarbon
-🌍 Carbon Emission Estimation
-
-Carbon emissions are estimated as:
-
-𝐸
-𝑐
-𝑎
-𝑟
-𝑏
-𝑜
-𝑛
-=
-𝑃
-×
-𝑡
-×
-𝐼
-E
-carbon
-	​
-
-=P×t×I
+```
+E = P × t × I
+```
 
 Where:
+- `E` — CO₂ emissions (g CO₂eq)
+- `P` — hardware power draw (kW)
+- `t` — training time per epoch (hours)
+- `I` — regional grid carbon intensity (gCO₂/kWh)
 
-P = Average power (kW)
+Emissions are logged cumulatively after each epoch and stored in `tracking/emissions.csv`.
 
-t = Training time (hours)
+---
 
-I = Carbon intensity (kg CO₂e/kWh)
+### Evaluation Protocols
 
-Tracking is performed using CodeCarbon during training.
+**1. Fixed-Epoch Training**  
+All models trained for a uniform number of epochs. Final accuracy reported at the last epoch.
 
-🧮 Carbon-Budgeted Training Algorithm
-Input: Model M, Dataset D, Max epochs E, Carbon budget B
-Initialize model parameters
-C_total = 0
+**2. Convergence-Based Training**  
+Training halted via early stopping when validation loss fails to improve for a patience window. Final accuracy at the early-stopping checkpoint is reported.
 
-for epoch in 1 to E:
-    Train model for one epoch
-    Measure C_epoch
-    C_total += C_epoch
-    
-    if C_total ≥ B:
-        Stop training
+**3. Carbon-Budgeted Evaluation**  
+Post-hoc analysis of training logs under a hard emission constraint:
+- Cumulative CO₂ is tracked per epoch.
+- Evaluation proceeds until the cumulative emissions exceed the budget threshold.
+- The best validation accuracy observed within the budget is returned.
 
-Return trained parameters
+Budget thresholds evaluated: **1g, 5g, and 10g CO₂eq**.
 
-📌 Training dynamics are NOT modified.
-📌 Carbon is used strictly as a stopping condition.
-📌 Evaluation is architecture-independent and post-hoc.
+---
 
-📈 Key Findings
-🔥 1. Residual Networks Are Carbon-Efficient
+## Algorithm: Carbon-Budgeted Evaluation
 
-ResNet-18 consistently dominates under strict budgets
+```
+Input:   training_log (per-epoch accuracy and cumulative CO₂),
+         carbon_budget B (grams CO₂eq)
 
-Early learning efficiency matters more than final accuracy
+Output:  best_accuracy within budget B
 
-⚠️ 2. VGG Is Carbon-Inefficient
+best_accuracy ← 0
+cumulative_carbon ← 0
 
-Strong convergence accuracy
+for each epoch e in training_log:
+    cumulative_carbon += emissions[e]
+    if cumulative_carbon > B:
+        break
+    if accuracy[e] > best_accuracy:
+        best_accuracy ← accuracy[e]
 
-Poor early learning → performs badly under carbon limits
+return best_accuracy
+```
 
-📉 3. Dataset Complexity Matters
+This procedure is model-agnostic and requires only a per-epoch log of accuracy and carbon emissions.
 
-CIFAR-100 magnifies efficiency differences
+---
 
-Early learning becomes more critical
+## Key Results
 
-🌱 4. Final Accuracy Can Be Misleading
+### CIFAR-10
 
-Traditional benchmarks hide:
+- **ResNet-18** achieves the best early-learning efficiency: it reaches high accuracy within the 1g budget while emitting significantly less than deeper counterparts.
+- **MobileNetV2** performs competitively under moderate budgets (5g), benefiting from its parameter-efficient design.
+- **VGG-16** and **EfficientNet-B0** require substantially larger budgets to reach peak accuracy, making them poor choices when emissions are constrained.
+- **LeNet-5**, while very cheap to train, saturates at lower accuracy and does not scale favorably.
 
-Early learning behavior
+### CIFAR-100
 
-Carbon cost accumulation
+- Class complexity amplifies efficiency differences. Architectures that appear similarly ranked under fixed-epoch training diverge significantly under budget-constrained evaluation.
+- ResNet-18 retains its efficiency advantage; MobileNetV2 falls behind at stricter budgets where it cannot achieve sufficient accuracy early in training.
 
-Efficiency trade-offs
+**Core insight**: Final-accuracy rankings do not reliably predict which model performs best under carbon constraints. Early convergence behavior is the dominant factor.
 
-📌 Why This Matters
+---
 
-This framework helps:
+## Visualizations
 
-Sustainable AI research
+The repository includes the following figures (generated in `figures/`):
 
-Industry with carbon/time constraints
+- **Accuracy vs. Cumulative CO₂ curves** — per-model training trajectories plotted against emissions.
+- **Pareto frontiers** — accuracy-vs-carbon trade-off under fixed-epoch and convergence-based protocols.
+- **Carbon-budget bar plots** — best achieved accuracy per model at 1g, 5g, and 10g budget thresholds.
 
-Carbon-aware model selection
+---
 
-Resource-constrained deployment environments
+## Why Carbon-Budgeted Evaluation Matters
 
-It shifts evaluation from:
+Reporting final accuracy after exhaustive training does not reflect deployment reality. In practice:
 
-Performance-only
+- **Compute resources are finite.** Cloud ML workloads operate under cost and time budgets that translate directly to emission ceilings.
+- **Early performance is predictive.** Models that learn efficiently in early epochs are better candidates for interrupted or resource-constrained training pipelines.
+- **Sustainability requires measurable metrics.** Carbon-budgeted accuracy provides a concrete, reproducible axis on which to compare architectures — one that aligns model evaluation with environmental responsibility.
 
-to
+This framework does not penalize accuracy; it reframes the question from *"which model is most accurate?"* to *"which model is most accurate per unit of carbon emitted?"*
 
-Performance under environmental constraints
+---
 
-🚧 Limitations
+## Repository Structure
 
-Hardware-specific (NVIDIA T4 GPU)
+```
+.
+├── green-ai-cnn-carbon_CIFAR-10/
+│   ├── models/                  # Model definitions (LeNet, VGG16, ResNet, MobileNetV2, EfficientNet)
+│   ├── training/
+│   │   ├── train_fixed_epochs.py
+│   │   ├── train_convergence.py
+│   │   └── callbacks.py
+│   ├── tracking/
+│   │   ├── carbon_tracker.py    # CodeCarbon wrapper
+│   │   └── emissions.csv        # Per-run emission logs
+│   ├── results/
+│   │   ├── logs/                # Per-epoch accuracy logs
+│   │   ├── raw/                 # Raw result CSVs
+│   │   └── processed/           # Aggregated results
+│   ├── experiments/             # Experiment notebooks
+│   └── figures/                 # Generated plots
+│
+├── green-ai-cnn-carbon_CIFAR-100/
+│   ├── models/
+│   ├── training/
+│   ├── tracking/
+│   └── results/
+│
+└── Carbon_budgeting/
+    ├── cifar-10/
+    │   └── experiment.ipynb     # Carbon-budgeted evaluation notebook (CIFAR-10)
+    └── cifar-100/
+        └── experiment.ipynb     # Carbon-budgeted evaluation notebook (CIFAR-100)
+```
 
-Training-time emissions only
+---
 
-No inference carbon accounting
+## Reproducibility
 
-Carbon estimation approximated via tracking tools
+- Each experiment was run for **3 independent trials** with results averaged.
+- All experiments were conducted on a single **NVIDIA T4 GPU** (Google Colab environment).
+- No architecture-specific hyperparameter tuning was applied; all models use identical training configurations.
+- Carbon-budgeted evaluation is entirely post-hoc: results are derived deterministically from logged data, with no randomness introduced at evaluation time.
 
-🔮 Future Work
+---
 
-Larger datasets (ImageNet-scale)
+## Installation
 
-Multi-objective constraints (carbon + time + cost)
+```bash
+git clone https://github.com/<your-username>/carbon-budgeted-cnn-evaluation.git
+cd carbon-budgeted-cnn-evaluation
+pip install -r requirements.txt
+```
 
-Inference-time carbon analysis
+**Core dependencies:** PyTorch, torchvision, CodeCarbon, NumPy, pandas, matplotlib.
 
-Hardware-aware architectural comparisons
+---
 
-📜 Citation
+## Usage
 
-If you use this work, please cite:
+### Training (Fixed-Epoch)
 
-@article{bisaria2026carbon,
-  title={Carbon-Budgeted Evaluation of CNN Architectures on CIFAR Datasets},
-  author={Pandey, Ankur and Bisaria, Divye and Gautam, Ishan},
-  journal={Under Review},
-  year={2026}
+```bash
+python green-ai-cnn-carbon_CIFAR-10/training/train_fixed_epochs.py \
+    --model resnet18 \
+    --dataset cifar10 \
+    --epochs 100
+```
+
+### Training (Convergence-Based)
+
+```bash
+python green-ai-cnn-carbon_CIFAR-10/training/train_convergence.py \
+    --model mobilenetv2 \
+    --dataset cifar10 \
+    --patience 10
+```
+
+### Carbon-Budgeted Evaluation
+
+Open and run the appropriate notebook:
+
+```
+Carbon_budgeting/cifar-10/experiment.ipynb
+Carbon_budgeting/cifar-100/experiment.ipynb
+```
+
+These notebooks load the emission logs from `tracking/emissions.csv` and the accuracy logs from `results/logs/`, then apply the budgeted evaluation algorithm across all budget thresholds.
+
+---
+
+## Citation
+
+If you use this framework, codebase, or findings in your research, please cite:
+
+```bibtex
+@article{yourname2026carbonbudgeted,
+  title     = {Carbon-Budgeted Evaluation of Convolutional Neural Network Architectures on CIFAR Datasets},
+  author    = {[Author(s)]},
+  journal   = {[Journal Name]},
+  year      = {2026},
+  note      = {[DOI or arXiv link]}
 }
-👨‍💻 Author
+```
 
-Divye Bisaria
-B.Tech CSE
-Manipal University Jaipur
-📧 divyebisaria4106@gmail.com
+---
 
-⭐ Contributing
+## License
 
-Contributions are welcome!
+This project is released under the [MIT License](LICENSE).
 
-If you’d like to:
+---
 
-Extend to new architectures
-
-Add inference carbon evaluation
-
-Apply to large-scale datasets
-
-Improve reproducibility
-
-Please open an issue or pull request.
+*For questions or issues, please open a GitHub issue or contact the corresponding author.*
