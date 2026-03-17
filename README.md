@@ -10,8 +10,6 @@ This repository accompanies the paper:
 
 **"Carbon-Budgeted Evaluation of Convolutional Neural Network Architectures on CIFAR Datasets"**
 
-Full paper available at: [[link]](#)
-
 Standard CNN benchmarking measures final accuracy after full training, which obscures a model's efficiency under real-world resource constraints. This work proposes a **carbon-budgeted evaluation paradigm**: given a predefined CO₂ emission budget (in grams), what is the maximum accuracy a model can achieve before that budget is exhausted?
 
 The framework operates entirely via **post-hoc analysis of training logs** — no modifications to training procedures are required. Models are compared across three evaluation protocols: fixed-epoch training, convergence-based training, and carbon-budgeted evaluation.
@@ -131,17 +129,6 @@ This procedure is model-agnostic and requires only a per-epoch log of accuracy a
 **Core insight**: Final-accuracy rankings do not reliably predict which model performs best under carbon constraints. Early convergence behavior is the dominant factor.
 
 ---
-
-## Visualizations
-
-The repository includes the following figures (generated in `figures/`):
-
-- **Accuracy vs. Cumulative CO₂ curves** — per-model training trajectories plotted against emissions.
-- **Pareto frontiers** — accuracy-vs-carbon trade-off under fixed-epoch and convergence-based protocols.
-- **Carbon-budget bar plots** — best achieved accuracy per model at 1g, 5g, and 10g budget thresholds.
-
----
-
 ## Why Carbon-Budgeted Evaluation Matters
 
 Reporting final accuracy after exhaustive training does not reflect deployment reality. In practice:
@@ -250,10 +237,10 @@ If you use this framework, codebase, or findings in your research, please cite:
 ```bibtex
 @article{yourname2026carbonbudgeted,
   title     = {Carbon-Budgeted Evaluation of Convolutional Neural Network Architectures on CIFAR Datasets},
-  author    = {[Author(s)]},
-  journal   = {[Journal Name]},
+  author    = {[Divye Bisaria, Ishan Gautam, Ankur Pandey]},
+  journal   = {[Under Review]},
   year      = {2026},
-  note      = {[DOI or arXiv link]}
+  note      = {[]}
 }
 ```
 
