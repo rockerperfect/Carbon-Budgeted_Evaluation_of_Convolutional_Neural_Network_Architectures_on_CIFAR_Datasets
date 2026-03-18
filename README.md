@@ -294,7 +294,7 @@ python green-ai-cnn-carbon_CIFAR-10/training/train_convergence.py \
 If you use this framework, codebase, or findings in your research, please cite:
 
 ```bibtex
-@article{yourname2026carbonbudgeted,
+@article{bisaria2026carbonbudgeted,
   title   = {Carbon-Budgeted Evaluation of Convolutional Neural Network Architectures on CIFAR Datasets},
   author  = {Divye Bisaria and Ishan Gautam and Ankur Pandey},
   journal = {Under Review},
